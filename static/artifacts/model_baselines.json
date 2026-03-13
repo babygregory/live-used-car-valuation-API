@@ -1,0 +1,54 @@
+{
+  "make_model": {
+    "Perodua Alza": {
+      "median_price": 39800.0,
+      "mean_price": 40451.21492537313,
+      "n": 335
+    },
+    "Perodua Axia": {
+      "median_price": 30000.0,
+      "mean_price": 32860.0,
+      "n": 5
+    },
+    "Perodua Kancil": {
+      "median_price": 6800.0,
+      "mean_price": 6973.025906735751,
+      "n": 193
+    },
+    "Perodua Kelisa": {
+      "median_price": 14800.0,
+      "mean_price": 14790.150485436894,
+      "n": 206
+    },
+    "Perodua Kembara": {
+      "median_price": 9825.0,
+      "mean_price": 10433.592592592593,
+      "n": 108
+    },
+    "Perodua Kenari": {
+      "median_price": 13800.0,
+      "mean_price": 14197.47926267281,
+      "n": 217
+    },
+    "Perodua Myvi": {
+      "median_price": 26500.0,
+      "mean_price": 27654.99661933739,
+      "n": 1479
+    },
+    "Perodua Nautica": {
+      "median_price": 37850.0,
+      "mean_price": 37872.0,
+      "n": 4
+    },
+    "Perodua Rusa": {
+      "median_price": 8800.0,
+      "mean_price": 9925.866666666667,
+      "n": 15
+    },
+    "Perodua Viva": {
+      "median_price": 18470.0,
+      "mean_price": 18565.755707762557,
+      "n": 438
+    }
+  }
+}

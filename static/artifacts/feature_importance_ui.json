@@ -1,0 +1,20 @@
+{
+  "labels": [
+    "Make/Model",
+    "Variant",
+    "Age",
+    "Color",
+    "Transmission",
+    "Engine CC",
+    "Mileage"
+  ],
+  "weights": [
+    53.61,
+    29.86,
+    8.21,
+    3.63,
+    2.58,
+    1.07,
+    1.04
+  ]
+}

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XGBoost Live Pricing API | Araminta Lee Shiao Choon</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            luxury: {
+              dark: '#111827',
+              panel: '#ffffff',
+              gold: '#d97706',
+              accent: '#2563eb'
+            }
+          },
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    body {
+      background-color: #f3f4f6;
+      color: #111827;
+    }
+
+    .glass-panel {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      backdrop-filter: none;
+    }
+
+    .glass-panel { box-shadow: 0 10px 30px rgba(17, 24, 39, 0.06); }
+    .glass-panel:hover { box-shadow: 0 14px 36px rgba(17, 24, 39, 0.09); }
+    .glass-panel { transition: box-shadow 0.25s ease, transform 0.25s ease; }
+    .glass-panel:hover { transform: translateY(-1px); }
+    input, select { box-shadow: inset 0 1px 2px rgba(17, 24, 39, 0.04); }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #e5e7eb; }
+    ::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 4px; }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans">
+
+  <nav class="border-b border-gray-200 bg-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-satellite-dish text-luxury-accent text-2xl animate-pulse"></i>
+          <span class="font-bold text-xl tracking-wide text-gray-900">
+            Car Valuation for <span class="text-luxury-accent">Perodua</span>
+            <span class="text-sm font-normal text-gray-500 ml-2 hidden sm:inline">| Predictive Pricing API</span>
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold rounded-lg px-4 py-2 flex items-center gap-2">
+            <i class="fa-solid fa-microchip"></i> XGBoost API Active
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <div class="glass-panel rounded-2xl p-6 shadow-xl lg:col-span-1">
+        <h2 class="text-lg font-semibold mb-4 text-gray-900">
+          <i class="fa-solid fa-car text-luxury-gold mr-2"></i> Target Vehicle
+        </h2>
+
+        <form id="prediction-form" class="space-y-4" onsubmit="return false;">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Make (MY)</label>
+              <select id="brand" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-luxury-accent focus:border-luxury-accent transition"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Model</label>
+              <select id="carModel" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-luxury-accent focus:border-luxury-accent transition"></select>
+            </div>
+          </div>
+
+          <div id="variantWrap" class="hidden">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Variant</label>
+            <select id="carVariant" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-luxury-accent focus:border-luxury-accent transition"></select>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-end mb-1">
+              <label class="block text-xs font-medium text-gray-500">Year</label>
+              <span id="yearVal" class="text-luxury-gold font-bold text-sm">2020</span>
+            </div>
+            <input
+              type="range"
+              id="year"
+              min="1990"
+              max="2026"
+              value="2020"
+              class="w-full h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-luxury-accent"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Mileage (KM)</label>
+            <input
+              type="number"
+              id="mileage"
+              value="45000"
+              step="5000"
+              class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-luxury-accent focus:border-luxury-accent transition"
+            />
+          </div>
+
+          <!-- Added trained features -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Engine Cap. (CC)</label>
+              <select
+                id="engineCC"
+                class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-luxury-accent focus:border-luxury-accent transition"
+              >
+                <option value="">Auto-detect / Select</option>
+                <option value="660">660</option>
+                <option value="850">850</option>
+                <option value="1000">1000</option>
+                <option value="1300">1300</option>
+                <option value="1500">1500</option>
+                <option value="1600">1600</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Transmission</label>
+              <select
+                id="transm"
+                class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-luxury-accent focus:border-luxury-accent transition"
+              >
+                <option value="">Select transmission</option>
+                <option value="MANUAL">Manual</option>
+                <option value="AUTO">Auto</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Color</label>
+              <select
+                id="color"
+                class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-luxury-accent focus:border-luxury-accent transition"
+              >
+                <option value="">Select color</option>
+                <option value="White">White</option>
+                <option value="Black">Black</option>
+                <option value="Silver">Silver</option>
+                <option value="Grey">Grey</option>
+                <option value="Gray">Gray</option>
+                <option value="Blue">Blue</option>
+                <option value="Red">Red</option>
+                <option value="Beige">Beige</option>
+                <option value="Gold">Gold</option>
+                <option value="Green">Green</option>
+                <option value="Yellow">Yellow</option>
+                <option value="Orange">Orange</option>
+                <option value="Brown">Brown</option>
+                <option value="Purple">Purple</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="glass-panel rounded-2xl p-6 shadow-xl lg:col-span-2 relative overflow-hidden flex flex-col justify-center">
+        <div class="absolute top-0 right-0 w-48 h-48 bg-blue-100 opacity-60 rounded-full blur-3xl -mr-10 -mt-10"></div>
+
+        <div class="flex justify-between items-start mb-2 relative z-10">
+          <div>
+            <span class="px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold uppercase rounded border border-green-200">
+              <i class="fa-solid fa-bolt mr-1"></i> Live inference from Flask API
+            </span>
+            <h3 class="text-sm text-gray-500 mt-2">LIVE XGBOOST MODEL PREDICTION</h3>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-gray-500 uppercase">Market Average (baseline)</p>
+            <p id="live-comp-price" class="text-lg font-semibold text-gray-500 line-through decoration-red-400">RM 0</p>
+          </div>
+        </div>
+
+        <div class="flex items-baseline gap-4 relative z-10">
+          <h1 id="final-price" class="text-5xl lg:text-7xl font-bold text-gray-900 tracking-tight">RM 0</h1>
+          <span id="price-diff-badge" class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm font-semibold border border-amber-200">
+            <i class="fa-solid fa-minus"></i> RM 0
+          </span>
+        </div>
+
+        <p class="text-xs text-gray-500 mt-4 relative z-10">
+          <i class="fa-solid fa-circle-info text-luxury-accent"></i>
+          This version performs <strong class="text-gray-700">live XGBoost inference via a Flask API</strong>.
+          The offline prototype uses heuristic pricing logic for UI simulation, while this version uses the serialized model and preprocessing pipeline.
+          Because the two systems use different pricing mechanisms, predicted values may differ.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 py-2">
+      <div class="h-px bg-gray-300 flex-grow"></div>
+      <span class="text-xs text-gray-500 font-semibold uppercase tracking-widest">XGBoost Production Metrics</span>
+      <div class="h-px bg-gray-300 flex-grow"></div>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="glass-panel rounded-xl p-4 border-l-2">
+        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">R² Score</p>
+        <h2 id="metric-r2" class="text-2xl font-bold text-gray-900">—</h2>
+        <p class="text-[10px] text-gray-500 mt-1">Explains <span class="text-gray-700" id="metric-r2-detail">—</span> variance</p>
+      </div>
+
+      <div class="glass-panel rounded-xl p-4">
+        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Mean Abs. Error</p>
+        <h2 id="metric-mae" class="text-2xl font-bold text-gray-900">—</h2>
+        <p class="text-[10px] text-gray-500 mt-1">Average deviation</p>
+      </div>
+
+      <div class="glass-panel rounded-xl p-4">
+        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Root Mean Sq. Error</p>
+        <h2 id="metric-rmse" class="text-2xl font-bold text-gray-900">—</h2>
+        <p class="text-[10px] text-gray-500 mt-1">Penalizes large errors</p>
+      </div>
+
+      <div class="glass-panel rounded-xl p-4">
+        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Inference Mode</p>
+        <h2 id="metric-time" class="text-2xl font-bold text-gray-900">Live API</h2>
+        <p class="text-[10px] text-gray-500 mt-1">Server-side XGBoost inference</p>
+      </div>
+    </div>
+
+    <p class="text-xs text-gray-500 mt-1">
+      Model performance: R² = 0.925 with MAE ≈ RM 2,114 and RMSE ≈ RM 3,005 on the held-out test set.
+    </p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
+      <div class="glass-panel rounded-xl p-5 shadow-xl flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">
+              <i class="fa-solid fa-bullseye text-luxury-accent mr-2"></i> Predicted vs. Actual
+            </h3>
+            <p class="text-[10px] text-gray-500" id="scatter-subtitle">Test set n=—</p>
+          </div>
+        </div>
+        <div class="relative flex-grow w-full min-h-[250px]">
+          <canvas id="scatterChart"></canvas>
+        </div>
+      </div>
+
+      <div class="glass-panel rounded-xl p-5 shadow-xl flex flex-col">
+        <div class="mb-4">
+          <h3 class="text-sm font-semibold text-gray-900">
+            <i class="fa-solid fa-layer-group text-luxury-accent mr-2"></i> XGBoost Feature Matrix
+          </h3>
+          <p class="text-[10px] text-gray-500">Relative decision weighting</p>
+        </div>
+        <div class="relative flex-grow w-full min-h-[250px]">
+          <canvas id="featureChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const ASSET_BASE = "/static/artifacts";
+    const cacheBust = () => "?ts=" + Date.now();
+
+    let makeToModels = {};
+    let mmToVariants = {};
+    let baselines = null;
+    let modelMetrics = null;
+
+    let xgbFeatureLabels = [];
+    let xgbFeatureWeights = [];
+    let scatterPoints = [];
+
+    function fmtRM(x) {
+      const n = Number(x) || 0;
+      return "RM " + Math.round(n).toLocaleString();
+    }
+
+    function animateValue(id, end, prefix) {
+      const obj = document.getElementById(id);
+      let start = parseFloat(obj.innerText.replace(/[^0-9.-]+/g, "")) || 0;
+      const duration = 350;
+      const startTime = performance.now();
+
+      function update(t) {
+        const p = Math.min((t - startTime) / duration, 1);
+        const v = start + (end - start) * p;
+        obj.innerText = prefix + Math.round(v).toLocaleString();
+        if (p < 1) requestAnimationFrame(update);
+      }
+
+      requestAnimationFrame(update);
+    }
+
+    function getMakeModelKey(make, model) {
+      return `${make}||${model}`;
+    }
+
+    function inferEngineCC(model, variant) {
+      const m = (model || "").toUpperCase();
+      const v = (variant || "").toUpperCase();
+
+      if (v.includes("660") || v.includes("659") || v.includes("650")) return "660";
+      if (v.includes("850") || v.includes("847")) return "850";
+      if (v.includes("1.0") || v.includes("1000") || v.includes("998") || v.includes("989")) return "1000";
+      if (v.includes("1.3") || v.includes("1300")) return "1300";
+      if (v.includes("1.5") || v.includes("1500")) return "1500";
+      if (v.includes("1.6") || v.includes("1600")) return "1600";
+
+      if (m.includes("KANCIL")) return "660";
+      if (m.includes("KELISA")) return "1000";
+      if (m.includes("KENARI")) return "1000";
+      if (m.includes("VIVA")) return "1000";
+      if (m.includes("AXIA")) return "1000";
+      if (m.includes("MYVI")) return "1300";
+      if (m.includes("ALZA")) return "1500";
+      if (m.includes("KEMBARA")) return "1300";
+      if (m.includes("RUSA")) return "1300";
+      if (m.includes("NAUTICA")) return "1500";
+
+      return "";
+    }
+
+    function updateModels() {
+      const make = document.getElementById("brand").value;
+      const modelSelect = document.getElementById("carModel");
+      modelSelect.innerHTML = "";
+
+      const models = makeToModels[make] || [];
+      models.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        modelSelect.appendChild(opt);
+      });
+
+      updateVariants();
+    }
+
+    function updateVariants() {
+      const make = document.getElementById("brand").value;
+      const model = document.getElementById("carModel").value;
+      const wrap = document.getElementById("variantWrap");
+      const variantSelect = document.getElementById("carVariant");
+
+      const key = getMakeModelKey(make, model);
+      const variants = (mmToVariants[key] || []).filter(v => v !== "Unknown");
+
+      variantSelect.innerHTML = "";
+
+      if (!variants.length) {
+        wrap.classList.add("hidden");
+        const inferredCC = inferEngineCC(model, "");
+        if (inferredCC && !document.getElementById("engineCC").value) {
+          document.getElementById("engineCC").value = inferredCC;
+        }
+        runLivePrediction();
+        return;
+      }
+
+      wrap.classList.remove("hidden");
+
+      variants.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        variantSelect.appendChild(opt);
+      });
+
+      const selectedVariant = document.getElementById("carVariant")?.value || "";
+      const inferredCC = inferEngineCC(model, selectedVariant);
+      if (inferredCC && !document.getElementById("engineCC").value) {
+        document.getElementById("engineCC").value = inferredCC;
+      }
+
+      runLivePrediction();
+    }
+
+    async function runLivePrediction() {
+      if (!modelMetrics) return;
+
+      const make = document.getElementById("brand").value;
+      const model = document.getElementById("carModel").value;
+      const variant = document.getElementById("carVariant")?.value || "";
+      const yearVal = parseInt(document.getElementById("year").value);
+      const mileageVal = parseInt(document.getElementById("mileage").value) || 0;
+
+      document.getElementById("yearVal").innerText = yearVal;
+
+      if (!make || !model) return;
+
+      let engineCCVal = document.getElementById("engineCC")?.value || "";
+      const transmVal = document.getElementById("transm")?.value || "";
+      const colorVal = document.getElementById("color")?.value || "";
+
+      if (!engineCCVal) {
+        engineCCVal = inferEngineCC(model, variant);
+        if (engineCCVal) {
+          document.getElementById("engineCC").value = engineCCVal;
+        }
+      }
+
+      try {
+        const response = await fetch("/api/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            make: make,
+            model: model,
+            variant: variant,
+            year: yearVal,
+            mileage: mileageVal,
+            engine_cc: engineCCVal,
+            transm: transmVal,
+            color: colorVal
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          console.error("Prediction API error:", result);
+          return;
+        }
+
+        const predicted = Number(result.predicted_price || 0);
+
+        const makeModel = (make + " " + model).trim();
+        let marketAvg = modelMetrics.median_price || 0;
+
+        if (baselines && baselines.make_model && baselines.make_model[makeModel]) {
+          marketAvg = baselines.make_model[makeModel].median_price;
+        }
+
+        animateValue("live-comp-price", marketAvg, "RM ");
+        animateValue("final-price", predicted, "RM ");
+
+        const diff = predicted - marketAvg;
+        const badge = document.getElementById("price-diff-badge");
+
+        if (diff >= 0) {
+          badge.innerHTML = `<i class="fa-solid fa-arrow-up"></i> RM ${Math.round(diff).toLocaleString()}`;
+          badge.className = "px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-semibold border border-green-200";
+        } else {
+          badge.innerHTML = `<i class="fa-solid fa-arrow-down"></i> RM ${Math.round(Math.abs(diff)).toLocaleString()}`;
+          badge.className = "px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm font-semibold border border-amber-200";
+        }
+
+      } catch (err) {
+        console.error("Failed to call /api/predict:", err);
+      }
+    }
+
+    async function initDashboard() {
+      try {
+        const [makesJson, fi, sc, metrics] = await Promise.all([
+          fetch(`${ASSET_BASE}/malaysia_make_models.json${cacheBust()}`).then(r => r.json()),
+          fetch(`${ASSET_BASE}/feature_importance_ui.json${cacheBust()}`).then(r => r.json()),
+          fetch(`${ASSET_BASE}/scatter_ui.json${cacheBust()}`).then(r => r.json()),
+          fetch(`${ASSET_BASE}/model_metrics.json${cacheBust()}`).then(r => r.json())
+        ]);
+
+        makeToModels = makesJson || {};
+        xgbFeatureLabels = fi.labels || [];
+        xgbFeatureWeights = fi.weights || [];
+        scatterPoints = sc.points || [];
+        modelMetrics = metrics || null;
+
+        try {
+          baselines = await fetch(`${ASSET_BASE}/model_baselines.json${cacheBust()}`).then(r => r.json());
+        } catch (_) {
+          baselines = null;
+        }
+
+        try {
+          mmToVariants = await fetch(`${ASSET_BASE}/malaysia_make_model_variants.json${cacheBust()}`).then(r => r.json());
+        } catch (_) {
+          mmToVariants = {};
+        }
+
+        const brandSelect = document.getElementById("brand");
+        brandSelect.innerHTML = "";
+
+        Object.keys(makeToModels).sort().forEach(make => {
+          const opt = document.createElement("option");
+          opt.value = make;
+          opt.textContent = make;
+          brandSelect.appendChild(opt);
+        });
+
+        document.getElementById("brand").addEventListener("change", () => {
+          document.getElementById("engineCC").value = "";
+          updateModels();
+        });
+        document.getElementById("carModel").addEventListener("change", () => {
+          document.getElementById("engineCC").value = "";
+          updateVariants();
+        });
+        document.getElementById("carVariant").addEventListener("change", () => {
+          const model = document.getElementById("carModel").value;
+          const variant = document.getElementById("carVariant").value;
+          const inferredCC = inferEngineCC(model, variant);
+          if (inferredCC && !document.getElementById("engineCC").dataset.userEdited) {
+            document.getElementById("engineCC").value = inferredCC;
+          }
+          runLivePrediction();
+        });
+        document.getElementById("year").addEventListener("input", runLivePrediction);
+        document.getElementById("mileage").addEventListener("input", runLivePrediction);
+
+        document.getElementById("engineCC").addEventListener("change", () => {
+          const val = document.getElementById("engineCC").value;
+          if (val) {
+            document.getElementById("engineCC").dataset.userEdited = "1";
+          } else {
+            delete document.getElementById("engineCC").dataset.userEdited;
+          }
+          runLivePrediction();
+        });
+        document.getElementById("transm").addEventListener("change", runLivePrediction);
+        document.getElementById("color").addEventListener("change", runLivePrediction);
+
+        if (modelMetrics) {
+          const r2 = Number(modelMetrics.r2 || 0);
+          const mae = Number(modelMetrics.mae || 0);
+          const rmse = Number(modelMetrics.rmse || 0);
+
+          document.getElementById("metric-r2").textContent = r2.toFixed(3);
+          document.getElementById("metric-r2-detail").textContent = (r2 * 100).toFixed(1) + "%";
+          document.getElementById("metric-mae").textContent = fmtRM(mae);
+          document.getElementById("metric-rmse").textContent = fmtRM(rmse);
+        }
+
+        updateModels();
+
+        Chart.defaults.color = "#6b7280";
+        Chart.defaults.font.family = "Inter";
+
+        const nTest = sc.n_total_test ?? (scatterPoints.length || 0);
+        document.getElementById("scatter-subtitle").textContent = `Test set n=${nTest}`;
+
+        const ctxScatter = document.getElementById("scatterChart").getContext("2d");
+        new Chart(ctxScatter, {
+          type: "scatter",
+          data: {
+            datasets: [
+              {
+                label: "Predicted vs Actual",
+                data: scatterPoints,
+                backgroundColor: "rgba(37, 99, 235, 0.45)",
+                borderColor: "#2563eb",
+                pointRadius: 2
+              },
+              {
+                label: "Perfect Fit",
+                data: [{ x: 0, y: 0 }, { x: 150000, y: 150000 }],
+                type: "line",
+                borderColor: "rgba(107,114,128,0.35)",
+                borderDash: [5, 5],
+                pointRadius: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: "rgba(107,114,128,0.12)" } },
+              y: { grid: { color: "rgba(107,114,128,0.12)" } }
+            }
+          }
+        });
+
+        const ctxFeature = document.getElementById("featureChart").getContext("2d");
+        new Chart(ctxFeature, {
+          type: "bar",
+          data: {
+            labels: xgbFeatureLabels,
+            datasets: [{
+              label: "Importance (%)",
+              data: xgbFeatureWeights,
+              backgroundColor: "#2563eb",
+              borderRadius: 4
+            }]
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: "rgba(107,114,128,0.12)" }, max: 100 },
+              y: { grid: { display: false } }
+            }
+          }
+        });
+
+      } catch (e) {
+        console.error("Dashboard init failed:", e);
+      }
+    }
+
+    window.onload = initDashboard;
+  </script>
+</body>
+</html>

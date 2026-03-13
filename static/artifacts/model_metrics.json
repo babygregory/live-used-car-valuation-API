@@ -1,0 +1,14 @@
+{
+  "r2": 0.9249887466430664,
+  "mae": 2113.6434737141926,
+  "rmse": 3005.109386931219,
+  "n_train": 2400,
+  "n_test": 600,
+  "median_price": 22000.0,
+  "mean_price": 23883.206666666665,
+  "mae_pct_of_median": 9.607470335064512,
+  "rmse_pct_of_median": 13.65958812241463,
+  "trained_at": "2026-03-12T13:34:00",
+  "target_transform": "log1p(price)",
+  "dataset_fingerprint": "3cec35c2976bf57b795681ca0b2aa8e3"
+}
