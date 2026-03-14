@@ -12,4 +12,4 @@ Ensure requirement.txt has these lines below:-
  
 pip install -r requirements.txt and after all the libraries in requirement.txt are installed **run python app.py**
 
-## 2. Then open: Type http://127.0.0.1:5000
+## 2. Then open browser: Type http://127.0.0.1:5000
