@@ -9,9 +9,6 @@ app.py (Flask API)
         ↓
 index.html UI
 ```
-# Test the API health endpoint: 
-OPen browser and type **http://127.0.0.1:5000/api/health**
-
 # How to run on local machine
 
 ## 1. In terminal: 
@@ -27,3 +24,14 @@ Ensure requirement.txt has these lines below:-
 pip install -r requirements.txt and after all the libraries in requirement.txt are installed **run python app.py**
 
 ## 2. Then open browser: Type http://127.0.0.1:5000
+
+## 3. Test the API health endpoint
+http://127.0.0.1:5000/api/health
+
+You should see:
+```text
+{
+  "status": "ok",
+  "model_loaded": true,
+  "preprocessor_loaded": true
+}
