@@ -1,6 +1,6 @@
 # Final production stack should look like this
 ```text
-train_carPrice_xgb.ipynb (obtain from offline predictoin repository)
+train_carPrice_xgb.ipynb (obtain from offline-used-car-valuation repository)
         ↓
 model.pkl
 preprocessor.pkl
