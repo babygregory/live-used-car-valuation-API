@@ -1,3 +1,15 @@
+# Final production stack should look like this
+```text
+train_malaysia_xgb_export_ui.py
+        ↓
+model.pkl
+preprocessor.pkl
+        ↓
+app.py (Flask API)
+        ↓
+index.html UI
+```
+
 # How to run on local machine
 
 ## 1. In terminal: 
