@@ -9,6 +9,8 @@ app.py (Flask API)
         ↓
 index.html UI
 ```
+# Test the API health endpoint: 
+OPen browser and type **http://127.0.0.1:5000/api/health**
 
 # How to run on local machine
 
