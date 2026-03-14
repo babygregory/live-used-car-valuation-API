@@ -10,7 +10,6 @@ Ensure requirement.txt has these lines below:-
 - xgboost==2.1.2
 - joblib==1.4.2
  
-pip install -r requirements.txt 
-python app.py
+pip install -r requirements.txt and after all the libraries in requirement.txt are installed **run python app.py**
 
 ## 2. Then open: Type http://127.0.0.1:5000
