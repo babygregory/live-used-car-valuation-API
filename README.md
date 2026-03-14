@@ -1,4 +1,4 @@
-# How to run locally on PC / Laptop
+# How to run on local machine
 
 ## 1. In terminal: 
 
