@@ -1,6 +1,6 @@
 # Final production stack should look like this
 ```text
-train_malaysia_xgb_export_ui.py
+train_carPrice_xgb.ipynb (obtain from offline predictoin repository)
         ↓
 model.pkl
 preprocessor.pkl
