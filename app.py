@@ -5,10 +5,8 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from flask import Flask, jsonify, render_template, request
-from joblib import load
 from flask_cors import CORS
-
-CORS(app, origins=["https://aramintalee.pages.dev"])
+from joblib import load
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ARTIFACT_DIR = os.path.join(BASE_DIR, "artifacts")
@@ -17,6 +15,11 @@ MODEL_PATH = os.path.join(ARTIFACT_DIR, "model.pkl")
 PREPROCESSOR_PATH = os.path.join(ARTIFACT_DIR, "preprocessor.pkl")
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+
+CORS(app, origins=["https://aramintalee.pages.dev"])
+
+model = load(MODEL_PATH)
+preprocessor = load(PREPROCESSOR_PATH)
 
 # -----------------------------
 # Load model artifacts once
@@ -138,9 +141,5 @@ def predict():
         }), 500
 
 
-# if __name__ == "__main__":
-# app.run(debug=True)
-
-if __name__ == "__main__":  
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-
