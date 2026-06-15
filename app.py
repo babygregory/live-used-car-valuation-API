@@ -6,6 +6,9 @@ import numpy as np
 import pandas as pd
 from flask import Flask, jsonify, render_template, request
 from joblib import load
+from flask_cors import CORS
+
+CORS(app, origins=["https://aramintalee.pages.dev"])
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ARTIFACT_DIR = os.path.join(BASE_DIR, "artifacts")
@@ -135,5 +138,9 @@ def predict():
         }), 500
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+# if __name__ == "__main__":
+# app.run(debug=True)
+
+if __name__ == "__main__":  
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
