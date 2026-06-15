@@ -14,12 +14,14 @@ index.html UI
 ## 1. In terminal: 
 
 Ensure requirement.txt has these lines below:- 
-- Flask==3.1.0
-- pandas==2.2.3
-- numpy==2.1.3
-- scikit-learn==1.5.2
-- xgboost==2.1.2
-- joblib==1.4.2
+flask==3.0.3
+flask-cors==4.0.1
+gunicorn==22.0.0
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.2
+xgboost==2.1.1
+joblib==1.4.2
  
 pip install -r requirements.txt and after all the libraries in requirement.txt are installed **run python app.py**
 
